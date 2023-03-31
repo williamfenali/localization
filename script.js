@@ -41,7 +41,13 @@ let cronometro;
 //variavel para ver para qual esta contando o cronometro
 let contagem;
 
-//busca os placares
+//busca os placares e zera se for null
+if(localStorage.getItem('esquerda') === null){
+    localStorage.setItem('esquerda', 0)
+}
+if(localStorage.getItem('direita') === null){
+    localStorage.setItem('direita', 0)
+}
 document.getElementById("placarEsquerda").innerHTML = localStorage.getItem('esquerda');
 document.getElementById("placarDireita").innerHTML = localStorage.getItem('direita');
 
