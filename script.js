@@ -1,27 +1,58 @@
 //cria a variável map
 var map;
 
+const bases = [
+    { name: 'KVA', latitude: -12.529288, longitude: -55.705107, team: '', color: 'black' },
+    { name: 'CQB', latitude: -12.529632, longitude: -55.705098, team: '', color: 'black' },
+    { name: 'Mesquita', latitude: -12.528969, longitude: -55.706164, team: '', color: 'black' },
+    { name: 'Tobogã', latitude: -12.528897, longitude: -55.705208, team: '', color: 'black' },
+    { name: 'Brejo', latitude: -12.529923, longitude: -55.705884, team: '', color: 'black' },
+]
+
+const spawns = [
+    { latitude: -12.528027, longitude: -55.706165, team: 'Vermelho', color: 'red' },
+    { latitude: -12.529943, longitude: -55.705404, team: 'Azul', color: 'blue' }
+]
+
 //função para quando for permitido a localização
 function success(pos) {
     //se map estiver vazio
     if (map === undefined) {
         //cria um map
-        map = L.map('map').setView([pos.coords.latitude, pos.coords.longitude], 16);
+        // map = L.map('map').setView([pos.coords.latitude, pos.coords.longitude], 20);
+        map = L.map('map').setView([-12.528765, -55.704615], 20);
     } else {
         //se não, ele remove o mapa antigo
         map.remove();
         //cria um novo
-        map = L.map('map').setView([pos.coords.latitude, pos.coords.longitude], 16);
+        // map = L.map('map').setView([pos.coords.latitude, pos.coords.longitude], 20);
+        map = L.map('map').setView([-12.528765, -55.704615], 20);
     }
 
+    //direitos autorais
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     //adiciona as coordenadas para o marcador
-    L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(map);
+    // L.marker([pos.coords.latitude, pos.coords.longitude], {icon: L.icon({iconUrl: 'https://github.com/google/material-design-icons/blob/master/png/maps/navigation/materialicons/18dp/2x/baseline_navigation_black_18dp.png?raw=true'})}).addTo(map);
+    L.marker([-12.528765, -55.704615], { icon: L.icon({ iconUrl: 'https://github.com/google/material-design-icons/blob/master/png/maps/navigation/materialicons/18dp/2x/baseline_navigation_black_18dp.png?raw=true' }) }).addTo(map);
     // .bindPopup('Sua posição')
     // .openPopup();
+
+    //adiciona os marcadores de bases
+    bases.forEach((base) => {
+        L.marker([base.latitude, base.longitude], { icon: L.icon({ iconUrl: `https://github.com/williamfenali/icons/blob/main/marker_${base.color}.png?raw=true`, iconSize: [30, 30] }) })
+            .bindPopup(base.name)
+            .addTo(map)
+    })
+
+    //adiciona os marcadores de spawns
+    spawns.forEach((spawn) => {
+        L.marker([spawn.latitude, spawn.longitude], { icon: L.icon({ iconUrl: `https://github.com/williamfenali/icons/blob/main/home_${spawn.color}.png?raw=true`,iconSize: [30, 30] }) })
+            .bindPopup(spawn.team)
+            .addTo(map)
+    })
 };
 
 //caso não for permitido usar a localização
@@ -34,112 +65,3 @@ var watchID = navigator.geolocation.watchPosition(success, error, {
     //habilita a precisão maior
     enableHighAccuracy: true,
 });
-
-//variável para cronometro
-let cronometro;
-
-//variavel para ver para qual esta contando o cronometro
-let contagem;
-
-//busca os placares e zera se for null
-if(localStorage.getItem('esquerda') === null){
-    localStorage.setItem('esquerda', 0)
-}
-if(localStorage.getItem('direita') === null){
-    localStorage.setItem('direita', 0)
-}
-document.getElementById("placarEsquerda").innerHTML = localStorage.getItem('esquerda');
-document.getElementById("placarDireita").innerHTML = localStorage.getItem('direita');
-
-//verifica se tem algum time dominando, se tiver, põe DOMINADO para ele
-if (localStorage.getItem('dominado') === 'esquerda') {
-    document.getElementById("timeEsquerda").innerHTML = 'DOMINADO!';
-    document.getElementById("timeDireita").innerHTML = 'Click';
-} else if (localStorage.getItem('dominado') === 'direita') {
-    document.getElementById("timeDireita").innerHTML = 'DOMINADO!';
-    document.getElementById("timeEsquerda").innerHTML = 'Click';
-} else {
-    document.getElementById("timeEsquerda").innerHTML = 'Click';
-    document.getElementById("timeDireita").innerHTML = 'Click';
-}
-
-//função para click do lado esquerdo
-function cronoEsquerda() {
-    if (contagem === 'esquerda') {
-        alert('já esta contando')
-    } else {
-        //troca para esquerda o contador
-        contagem = 'esquerda'
-        //verifica se está dominando
-        if (localStorage.getItem('dominado') === 'esquerda') {
-            alert('dominado')
-        } else {
-            //se não estiver dominando, zera o cronometro
-            clearInterval(cronometro);
-            //altera o outro time para click
-            document.getElementById("timeDireita").innerHTML = 'Click';
-            //zera o controle de dominação
-            localStorage.setItem('dominado', '')
-            //inicia o novo valor para o cronometro
-            let tempo = 60;
-            //faz a contagem
-            cronometro = setInterval(function () {
-                //se o tempo chegar a zero
-                if (tempo === 0) {
-                    //altera para vazio a contagem
-                    contagem = ''
-                    //para o intervalo para não ficar contando no placar
-                    clearInterval(cronometro)
-                    //busca o valor do placar
-                    let temp = parseInt(localStorage.getItem('esquerda'))
-                    //adiciona o novo valor
-                    localStorage.setItem('esquerda', temp + 1);
-                    //mostra o placar novo
-                    document.getElementById("placarEsquerda").innerHTML = localStorage.getItem('esquerda');
-                    //mostra que está dominado
-                    document.getElementById("timeEsquerda").innerHTML = 'DOMINADO!';
-                    //salva o novo dominador
-                    localStorage.setItem('dominado', 'esquerda')
-                } else {
-                    //continua a contagem
-                    tempo--;
-                    let segundos = tempo;
-                    let formatoTempo = (segundos < 10 ? "0" + segundos + " segundos" : segundos + " segundos");
-                    document.getElementById("timeEsquerda").innerHTML = formatoTempo;
-                }
-            }, 1000);
-        }
-    }
-}
-
-//função para o click do lado direito
-function cronoDireita() {
-    if (contagem === 'direita') {
-        alert('já esta contando')
-    } else {
-        contagem = 'direita'
-        if (localStorage.getItem('dominado') === 'direita') {
-            alert('dominado')
-        } else {
-            clearInterval(cronometro);
-            document.getElementById("timeEsquerda").innerHTML = 'Click';
-            localStorage.setItem('dominado', '')
-            let tempo = 60;
-            cronometro = setInterval(function () {
-                if (tempo === 0) {
-                    clearInterval(cronometro)
-                    let temp = parseInt(localStorage.getItem('direita'))
-                    localStorage.setItem('direita', temp + 1);
-                    document.getElementById("placarDireita").innerHTML = localStorage.getItem('direita');
-                    document.getElementById("timeDireita").innerHTML = 'DOMINADO!';
-                    localStorage.setItem('dominado', 'direita')
-                } else {
-                    tempo--;
-                    let segundos = tempo;
-                    let formatoTempo = (segundos < 10 ? "0" + segundos + " segundos" : segundos + " segundos");
-                    document.getElementById("timeDireita").innerHTML = formatoTempo;
-                }
-            }, 1000);
-        }
-    }
-}
